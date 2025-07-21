@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gestor de Tareas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+
+  <!-- Header -->
+  <header>
+    <nav class="bg-white border-gray-200 px-4 py-3 shadow-md">
+     <div class="flex justify-between items-center max-w-7xl mx-auto">
+  <a href="#" class="flex items-center">
+    <img src="https://flowbite.com/docs/images/logo.svg" class="h-8 mr-2" alt="Logo" />
+    <span class="text-xl font-bold">Gestor de Tareas</span>
+  </a>
+
+  <!-- Botón para abrir el modal -->
+  <button 
+    (click)="abrirModal()" 
+    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+    Crear Tarea
+  </button>
+</div>
+
+    </nav>
+  </header>
+
+  <!-- Filtro -->
+  <section class="max-w-7xl mx-auto mt-6 px-4">
+   <input type="text" placeholder="Buscar tarea..." class="w-full p-2 border rounded" [(ngModel)]="filtro" (ngModelChange)="aplicarFiltro()" />
+
+  </section>
+
+  <!-- Lista de tareas -->
+ <section class="max-w-7xl mx-auto mt-6 px-4">
+  <!-- Para pantallas grandes: tabla -->
+  <div class="hidden md:block overflow-x-auto">
+    <table class="w-full table-auto border border-gray-300 rounded-md">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-4 py-2 text-left">Título</th>
+          <th class="px-4 py-2 text-left">Descripción</th>
+          <th class="px-4 py-2 text-left">Fecha Límite</th>
+          <th class="px-4 py-2 text-center">Completada</th>
+          <th class="px-4 py-2 text-center">Acciones</th>
+        </tr>
+      </thead>
+    <tbody>
+<tr *ngFor="let tarea of filtro.trim() ? tareasPaginadas : tareas" class="border-t">
+    <td class="px-4 py-2">{{ tarea.titulo }}</td>
+    <td class="px-4 py-2">{{ tarea.descripcion }}</td>
+    <td class="px-4 py-2">{{ tarea.fechaLimite }}</td>
+    <td class="px-4 py-2 text-center">
+      <input type="checkbox" [(ngModel)]="tarea.completada" class="w-4 h-4" />
+    </td>
+    <td class="px-4 py-2 text-center space-x-2">
+      <button (click)="abrirEditarModal(tarea)" class="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500">Editar</button>
+      <button (click)="eliminarTarea(tarea.id!)" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Eliminar</button>
+    </td>
+  </tr>
+</tbody>
+
+    </table>
+  </div>
+
+  <!-- Para móviles: diseño tipo tarjeta -->
+<!-- Para móviles: diseño tipo tarjeta -->
+<div class="md:hidden space-y-4">
+  <div *ngFor="let tarea of tareas" class="border rounded-md p-4 bg-white shadow">
+    <h3 class="text-lg font-semibold text-gray-800">{{ tarea.titulo }}</h3>
+    <p class="text-gray-600 mb-1">{{ tarea.descripcion }}</p>
+    <p class="text-gray-500 text-sm">Fecha Límite: <span class="font-medium">{{ tarea.fechaLimite }}</span></p>
+
+    <div class="flex justify-between items-center mt-4">
+      <label class="flex items-center space-x-2">
+        <input type="checkbox" [(ngModel)]="tarea.completada" class="w-4 h-4" />
+        <span class="text-sm text-gray-700">Completada</span>
+      </label>
+      <div class="space-x-2">
+        <button (click)="abrirEditarModal(tarea)" class="bg-yellow-400 text-white px-3 py-1 rounded hover:bg-yellow-500 text-sm">Editar</button>
+        <button (click)="eliminarTarea(tarea.id!)" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</section>
+
+
+<div id="formularioModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+  <div class="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
+    <h2 class="text-xl font-semibold mb-4">Crear Tarea</h2>
+  <form #tareaForm="ngForm" (ngSubmit)="guardarTarea()" novalidate>
+  <!-- Título -->
+  <div class="mb-4">
+    <label class="block mb-1 text-sm">Título <span class="text-red-500">*</span></label>
+    <input type="text"
+           required
+           class="w-full px-3 py-2 border rounded"
+           [(ngModel)]="titulo"
+           name="titulo"
+           #tituloRef="ngModel" />
+    <p *ngIf="tituloRef.invalid && tituloRef.touched" class="text-red-500 text-sm">Título obligatorio</p>
+  </div>
+
+  <!-- Descripción -->
+  <div class="mb-4">
+    <label class="block mb-1 text-sm">Descripción <span class="text-red-500">*</span></label>
+    <textarea required
+              class="w-full px-3 py-2 border rounded"
+              rows="3"
+              [(ngModel)]="descripcion"
+              name="descripcion"
+              #descripcionRef="ngModel"></textarea>
+    <p *ngIf="descripcionRef.invalid && descripcionRef.touched" class="text-red-500 text-sm">Descripción obligatoria</p>
+  </div>
+
+  <!-- Fecha límite -->
+  <div class="mb-4">
+    <label class="block mb-1 text-sm">Fecha límite <span class="text-red-500">*</span></label>
+    <input type="date"
+           required
+           class="w-full px-3 py-2 border rounded"
+           [(ngModel)]="fechaLimite"
+           name="fechaLimite"
+           #fechaRef="ngModel" />
+    <p *ngIf="fechaRef.invalid && fechaRef.touched" class="text-red-500 text-sm">Fecha obligatoria</p>
+    <p *ngIf="fechaLimiteInvalida" class="text-red-500 text-sm">Fecha límite no debe estar en el pasado</p>
+  </div>
+
+  <!-- Botones -->
+  <div class="flex justify-end gap-2">
+    <button type="button"
+            (click)="cerrarModal()"
+            class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
+    <button type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            [disabled]="tareaForm.invalid">Guardar</button>
+  </div>
+</form>
+  </div>
+</div>
+
+
+<!-- Modal para Editar Tarea -->
+<div id="editarModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+  <div class="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
+    <h2 class="text-xl font-semibold mb-4">Editar Tarea</h2>
+    <form (ngSubmit)="actualizarTarea()">
+      <div class="mb-4">
+        <label class="block mb-1 text-sm">Título <span class="text-red-500">*</span></label>
+        <input type="text" required class="w-full px-3 py-2 border rounded" [(ngModel)]="tareaEdit.titulo" name="tituloEdit" />
+      </div>
+      <div class="mb-4">
+        <label class="block mb-1 text-sm">Descripción <span class="text-red-500">*</span></label>
+        <textarea required class="w-full px-3 py-2 border rounded" rows="3" [(ngModel)]="tareaEdit.descripcion" name="descripcionEdit"></textarea>
+      </div>
+      <div class="mb-4">
+        <label class="block mb-1 text-sm">Fecha límite <span class="text-red-500">*</span></label>
+        <input type="date" required class="w-full px-3 py-2 border rounded" [(ngModel)]="tareaEdit.fechaLimite" name="fechaLimiteEdit" />
+      </div>
+      <div class="flex justify-end gap-2">
+        <button type="button" (click)="cerrarEditarModal()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
+        <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">Actualizar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
+<div style="max-width: 1250px; margin: auto;">
+<mat-paginator 
+  [length]="filtro.trim() ? tareasFiltradas.length : tareas.length"
+  [pageSize]="pageSize"
+  [pageSizeOptions]="[5, 10, 20]"
+  (page)="cambiarPagina($event)">
+</mat-paginator>
+
+</div>
